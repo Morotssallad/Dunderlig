@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>F1 25 Kompisligan</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ===================== VARIABLES & RESET ===================== */
+:root{
+  --bg:#060810;--bg2:#0d1117;--bg3:#131825;--card:#161d2e;--card2:#1a2235;
+  --border:#1e2d45;--border2:#253555;
+  --red:#e8001d;--red2:#ff1e3c;--cyan:#00d4ff;--cyan2:#00aacc;
+  --gold:#f5c842;--silver:#b0b8cc;--bronze:#cd7f32;
+  --green:#00e676;--orange:#ff6d00;
+  --text:#e8eaf6;--text2:#8899bb;--text3:#556688;
+  --font-head:'Orbitron',monospace;--font-body:'Exo 2',sans-serif;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 4px 24px rgba(0,0,0,.5);
+  --glow-red:0 0 20px rgba(232,0,29,.35);
+  --glow-cyan:0 0 20px rgba(0,212,255,.35);
+  --transition:.25s cubic-bezier(.4,0,.2,1);
+}
+.light-theme{
+  --bg:#f0f2f8;--bg2:#e4e8f2;--bg3:#dde2ef;--card:#ffffff;--card2:#f5f7fd;
+  --border:#c8d0e8;--border2:#b0bcd8;--text:#1a2235;--text2:#445577;--text3:#778899;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;min-height:100vh;overflow-x:hidden;transition:background var(--transition),color var(--transition)}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+/* ===================== BACKGROUND GRID ===================== */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+/* ===================== NAV ===================== */
+nav{position:sticky;top:0;z-index:1000;background:rgba(6,8,16,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:0 20px}
+.nav-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:8px;height:64px}
+.nav-logo{font-family:var(--font-head);font-weight:900;font-size:1.15rem;color:var(--red2);letter-spacing:.08em;margin-right:auto;white-space:nowrap;text-shadow:var(--glow-red)}
+.nav-logo span{color:var(--cyan);text-shadow:var(--glow-cyan)}
+.nav-btn{background:none;border:none;color:var(--text2);font-family:var(--font-body);font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:6px;cursor:pointer;transition:color var(--transition),background var(--transition);white-space:nowrap}
+.nav-btn:hover,.nav-btn.active{color:var(--cyan);background:rgba(0,212,255,.1)}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.icon-btn{background:none;border:1px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:8px;cursor:pointer;transition:all var(--transition);font-size:.9rem}
+.icon-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+/* ===================== MAIN LAYOUT ===================== */
+main{max-width:1400px;margin:0 auto;padding:24px 16px;position:relative;z-index:1}
+section{display:none}
+section.active{display:block}
+.section-title{font-family:var(--font-head);font-size:1.5rem;font-weight:700;letter-spacing:.06em;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.section-title i{color:var(--red2)}
+.section-title .sub{font-size:.75rem;font-weight:400;color:var(--text3);letter-spacing:.04em;margin-left:8px}
+/* ===================== CARDS ===================== */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:border-color var(--transition),box-shadow var(--transition)}
+.card:hover{border-color:var(--border2)}
+.card-glass{background:rgba(22,29,46,.7);backdrop-filter:blur(16px)}
+/* ===================== GRID HELPERS ===================== */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.nav-btn span{display:none}}
+/* ===================== DASHBOARD HERO ===================== */
+.hero{background:linear-gradient(135deg,rgba(232,0,29,.12) 0%,rgba(0,212,255,.08) 100%);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:24px;position:relative;overflow:hidden}
+.hero::before{content:'F1 25';position:absolute;right:-10px;top:-20px;font-family:var(--font-head);font-size:9rem;font-weight:900;color:rgba(255,255,255,.03);pointer-events:none;line-height:1}
+.hero-title{font-family:var(--font-head);font-size:2rem;font-weight:900;letter-spacing:.08em}
+.hero-title .accent{color:var(--red2);text-shadow:var(--glow-red)}
+.hero-sub{color:var(--text2);margin-top:6px;font-size:.9rem}
+.hero-meta{display:flex;gap:24px;margin-top:18px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat .val{font-family:var(--font-head);font-size:1.6rem;font-weight:700;color:var(--cyan);text-shadow:var(--glow-cyan)}
+.hero-stat .lbl{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+/* ===================== LATEST RACE HIGHLIGHT ===================== */
+.latest-race{background:linear-gradient(120deg,var(--card) 60%,rgba(0,212,255,.06));border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:24px}
+.latest-race .lr-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.badge{display:inline-block;font-size:.65rem;font-family:var(--font-head);font-weight:700;letter-spacing:.08em;padding:3px 10px;border-radius:99px;text-transform:uppercase}
+.badge-red{background:rgba(232,0,29,.2);color:var(--red2);border:1px solid rgba(232,0,29,.3)}
+.badge-cyan{background:rgba(0,212,255,.15);color:var(--cyan);border:1px solid rgba(0,212,255,.3)}
+.badge-gold{background:rgba(245,200,66,.15);color:var(--gold);border:1px solid rgba(245,200,66,.3)}
+.podium-row{display:flex;gap:10px;flex-wrap:wrap}
+.podium-card{flex:1;min-width:100px;border-radius:var(--radius-sm);padding:12px;text-align:center;position:relative;overflow:hidden}
+.podium-card.p1{background:linear-gradient(135deg,rgba(245,200,66,.18),rgba(245,200,66,.06));border:1px solid rgba(245,200,66,.3)}
+.podium-card.p2{background:linear-gradient(135deg,rgba(176,184,204,.15),rgba(176,184,204,.04));border:1px solid rgba(176,184,204,.25)}
+.podium-card.p3{background:linear-gradient(135deg,rgba(205,127,50,.15),rgba(205,127,50,.04));border:1px solid rgba(205,127,50,.25)}
+.podium-pos{font-family:var(--font-head);font-size:1.4rem;font-weight:900}
+.p1 .podium-pos{color:var(--gold)}.p2 .podium-pos{color:var(--silver)}.p3 .podium-pos{color:var(--bronze)}
+.podium-name{font-weight:700;font-size:.9rem;margin:4px 0}
+.podium-pts{font-size:.75rem;color:var(--text2)}
+/* ===================== STANDINGS TABLE ===================== */
+.standings-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.standings-table th{font-family:var(--font-head);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+.standings-table td{padding:11px 14px;border-bottom:1px solid rgba(30,45,69,.6);vertical-align:middle}
+.standings-table tr:last-child td{border-bottom:none}
+.standings-table tr:hover td{background:rgba(255,255,255,.025)}
+.standings-table tr.rank-1 td{background:rgba(245,200,66,.05)}
+.standings-table tr.rank-2 td{background:rgba(176,184,204,.03)}
+.standings-table tr.rank-3 td{background:rgba(205,127,50,.04)}
+.pos-badge{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:.75rem;font-weight:700}
+.pos-1{background:rgba(245,200,66,.2);color:var(--gold);border:1px solid rgba(245,200,66,.4)}
+.pos-2{background:rgba(176,184,204,.15);color:var(--silver);border:1px solid rgba(176,184,204,.3)}
+.pos-3{background:rgba(205,127,50,.15);color:var(--bronze);border:1px solid rgba(205,127,50,.3)}
+.pos-n{background:rgba(255,255,255,.06);color:var(--text2);border:1px solid var(--border)}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0}
+.player-cell{display:flex;align-items:center;gap:10px}
+.pts-total{font-family:var(--font-head);font-weight:700;font-size:1rem;color:var(--cyan)}
+.delta{font-size:.75rem}
+.delta.up{color:var(--green)}.delta.down{color:var(--red2)}.delta.same{color:var(--text3)}
+/* ===================== CHARTS ===================== */
+.chart-wrap{position:relative;width:100%;padding-top:0}
+.chart-wrap canvas{width:100%!important}
+.filter-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.filter-chip{border:1px solid var(--border);background:none;color:var(--text2);font-size:.75rem;font-family:var(--font-body);padding:5px 12px;border-radius:99px;cursor:pointer;transition:all var(--transition)}
+.filter-chip.on{color:var(--bg);border-color:transparent}
+/* ===================== STATS CARDS ===================== */
+.stat-tile{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:all var(--transition);position:relative;overflow:hidden}
+.stat-tile::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--radius) var(--radius) 0 0}
+.stat-tile.t-cyan::after{background:linear-gradient(90deg,var(--cyan),transparent)}
+.stat-tile.t-red::after{background:linear-gradient(90deg,var(--red2),transparent)}
+.stat-tile.t-gold::after{background:linear-gradient(90deg,var(--gold),transparent)}
+.stat-tile.t-green::after{background:linear-gradient(90deg,var(--green),transparent)}
+.stat-tile:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat-tile .st-val{font-family:var(--font-head);font-size:1.8rem;font-weight:700;margin:8px 0 4px}
+.stat-tile .st-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text3)}
+.stat-tile .st-sub{font-size:.78rem;color:var(--text2);margin-top:4px}
+.stat-tile .st-icon{font-size:1.6rem;opacity:.35;position:absolute;right:18px;top:18px}
+/* ===================== CALENDAR ===================== */
+.race-item{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;transition:border-color var(--transition)}
+.race-item.done{opacity:.75}
+.race-item.next{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,212,255,.15)}
+.race-item.next .race-header{background:rgba(0,212,255,.07)}
+.race-header{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;transition:background var(--transition)}
+.race-header:hover{background:rgba(255,255,255,.03)}
+.race-num{font-family:var(--font-head);font-size:.75rem;color:var(--text3);width:28px;flex-shrink:0}
+.race-name{font-weight:600;font-size:.95rem;flex:1}
+.race-status{font-size:.7rem;font-family:var(--font-head);letter-spacing:.06em;text-transform:uppercase}
+.status-done{color:var(--green)}.status-next{color:var(--cyan)}.status-future{color:var(--text3)}
+.race-chevron{color:var(--text3);transition:transform var(--transition)}
+.race-item.expanded .race-chevron{transform:rotate(180deg)}
+.race-detail{display:none;padding:14px 18px;border-top:1px solid var(--border);background:rgba(0,0,0,.2)}
+.race-item.expanded .race-detail{display:block}
+.result-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.result-table td{padding:7px 10px;border-bottom:1px solid rgba(30,45,69,.4)}
+.result-table tr:last-child td{border-bottom:none}
+.sprint-tag{font-size:.65rem;font-family:var(--font-head);background:rgba(255,109,0,.2);color:var(--orange);border:1px solid rgba(255,109,0,.3);padding:1px 7px;border-radius:4px;margin-left:6px}
+/* ===================== FORMS ===================== */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px;font-weight:600}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--font-body);font-size:.9rem;padding:10px 14px;border-radius:var(--radius-sm);transition:border-color var(--transition),box-shadow var(--transition);outline:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.12)}
+.form-select option{background:var(--bg2)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.85rem;font-weight:700;letter-spacing:.04em;cursor:pointer;border:none;transition:all var(--transition)}
+.btn-primary{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;box-shadow:0 4px 16px rgba(232,0,29,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(232,0,29,.45)}
+.btn-secondary{background:rgba(0,212,255,.12);color:var(--cyan);border:1px solid rgba(0,212,255,.25)}
+.btn-secondary:hover{background:rgba(0,212,255,.2)}
+.btn-danger{background:rgba(232,0,29,.12);color:var(--red2);border:1px solid rgba(232,0,29,.25)}
+.btn-danger:hover{background:rgba(232,0,29,.25)}
+.btn-sm{padding:6px 14px;font-size:.78rem}
+.result-inputs-grid{display:grid;grid-template-columns:1fr auto auto auto auto;gap:10px;align-items:center;margin-bottom:10px;padding:10px 14px;background:rgba(0,0,0,.2);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.result-inputs-grid .player-name{font-weight:600;font-size:.9rem}
+.checkbox-wrap{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text2)}
+.checkbox-wrap input[type=checkbox]{accent-color:var(--red2);width:15px;height:15px;cursor:pointer}
+/* ===================== PLAYER MANAGEMENT ===================== */
+.player-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px}
+.player-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;transition:all var(--transition);position:relative}
+.player-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.player-card .avatar-lg{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.4rem;margin:0 auto 10px;border:2px solid}
+.player-card .p-name{font-weight:700;font-size:1rem}
+.player-card .p-stats{font-size:.78rem;color:var(--text2);margin-top:4px}
+.player-card .p-delete{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;opacity:0;transition:opacity var(--transition)}
+.player-card:hover .p-delete{opacity:1}
+.player-card .p-delete:hover{color:var(--red2)}
+/* ===================== NOTIFICATIONS ===================== */
+#toast{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-msg{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:12px 18px;border-radius:var(--radius-sm);font-size:.85rem;box-shadow:var(--shadow);animation:slideIn .3s ease,fadeOut .4s 2.8s ease forwards;pointer-events:auto;display:flex;align-items:center;gap:8px;max-width:300px}
+.toast-msg.success{border-left:3px solid var(--green)}
+.toast-msg.error{border-left:3px solid var(--red2)}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(120%)}}
+/* ===================== MODAL ===================== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;animation:scaleIn .25s ease}
+@keyframes scaleIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem;transition:color var(--transition)}
+.modal-close:hover{color:var(--red2)}
+/* ===================== TABS ===================== */
+.tabs{display:flex;gap:4px;background:rgba(0,0,0,.3);border-radius:var(--radius-sm);padding:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{flex:1;background:none;border:none;color:var(--text2);font-family:var(--font-body);font-size:.82rem;font-weight:600;padding:8px 14px;border-radius:6px;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.tab-btn.active{background:var(--card2);color:var(--cyan);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+/* ===================== MISC ===================== */
+.divider{height:1px;background:var(--border);margin:20px 0}
+.empty-state{text-align:center;padding:40px;color:var(--text3)}
+.empty-state i{font-size:2.5rem;margin-bottom:12px;display:block;opacity:.4}
+.search-bar{position:relative}
+.search-bar i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.85rem}
+.search-bar input{padding-left:36px}
+.progress-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.tag-sprint{background:rgba(255,109,0,.15);color:var(--orange);border:1px solid rgba(255,109,0,.25);font-size:.65rem;font-family:var(--font-head);padding:2px 8px;border-radius:4px;letter-spacing:.06em}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-8{gap:8px}.gap-12{gap:12px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+.text-cyan{color:var(--cyan)}.text-red{color:var(--red2)}.text-gold{color:var(--gold)}.text-muted{color:var(--text2)}
+/* ===================== ANIMATIONS ===================== */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulse{animation:pulse 2s infinite}
+@keyframes glow-anim{0%,100%{box-shadow:var(--glow-cyan)}50%{box-shadow:0 0 30px rgba(0,212,255,.6)}}
+.race-item.next .race-header{animation:glow-anim 3s infinite}
+/* Media queries */
+@media(max-width:768px){
+  .hero-title{font-size:1.4rem}
+  .result-inputs-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .result-inputs-grid .player-name{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+<!-- EDIT MODE BANNER -->
+<div id="editBanner" style="display:none;position:sticky;top:64px;z-index:999;background:rgba(232,0,29,.15);border-bottom:1px solid rgba(232,0,29,.35);backdrop-filter:blur(12px);padding:8px 20px;align-items:center;gap:12px;font-size:.8rem;font-family:var(--font-head);letter-spacing:.06em;color:var(--red2)">
+  <i class="fas fa-pencil pulse"></i> REDIGERINGSLÄGE AKTIVT
+  <button id="lockBtn" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="lockEditMode()"><i class="fas fa-lock"></i> Lås</button>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,.06);color:var(--text2);border:1px solid var(--border)" onclick="resetPin()"><i class="fas fa-key"></i> Återställ PIN</button>
+</div>
+<div id="toast"></div>
+<!-- MODAL (race details / edit) -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Raceresultat</span>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">F1<span>25</span> LIGA</div>
+    <button class="nav-btn active" onclick="showSection('dashboard',this)"><i class="fas fa-gauge-high"></i> <span>Dashboard</span></button>
+    <button class="nav-btn" onclick="showSection('standings',this)"><i class="fas fa-trophy"></i> <span>Ställning</span></button>
+    <button class="nav-btn" onclick="showSection('statistics',this)"><i class="fas fa-chart-bar"></i> <span>Statistik</span></button>
+    <button class="nav-btn" onclick="showSection('calendar',this)"><i class="fas fa-calendar"></i> <span>Kalender</span></button>
+    <button class="nav-btn" onclick="showSection('players',this)"><i class="fas fa-users"></i> <span>Spelare</span></button>
+    <button class="nav-btn" onclick="showSection('addresult',this)"><i class="fas fa-plus"></i> <span>Resultat</span></button>
+    <div class="nav-right">
+      <button class="icon-btn" id="navEditBtn" onclick="promptEditMode(()=>{})" title="Redigeringsläge"><i class="fas fa-pencil"></i></button>
+      <button class="icon-btn" onclick="toggleTheme()" title="Byt tema"><i class="fas fa-circle-half-stroke"></i></button>
+      <button class="icon-btn" onclick="exportData()" title="Exportera JSON"><i class="fas fa-download"></i></button>
+      <button class="icon-btn" onclick="triggerImport()" title="Importera JSON"><i class="fas fa-upload"></i></button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"/>
+    </div>
+  </div>
+</nav>
+
+<main>
+<!-- ===================== DASHBOARD ===================== -->
+<section id="dashboard" class="active">
+  <div class="hero" id="heroBlock">
+    <div class="hero-title">F1 25 <span class="accent">KOMPISLIGAN</span></div>
+    <div class="hero-sub">Spåra din ligs alla resultat i realtid</div>
+    <div class="hero-meta" id="heroMeta"></div>
+  </div>
+  <div class="grid-2 mb-24">
+    <div id="latestRaceBlock"></div>
+    <div id="upcomingBlock"></div>
+  </div>
+  <div class="section-title"><i class="fas fa-list-ol"></i> Totalställning</div>
+  <div class="card mb-24">
+    <table class="standings-table" id="dashStandings"></table>
+  </div>
+  <div class="section-title"><i class="fas fa-chart-line"></i> Poängutveckling</div>
+  <div class="card mb-24">
+    <div class="filter-row" id="chartFilterDash"></div>
+    <div class="chart-wrap" style="height:280px"><canvas id="lineChartDash"></canvas></div>
+  </div>
+</section>
+
+<!-- ===================== STANDINGS ===================== -->
+<section id="standings">
+  <div class="section-title"><i class="fas fa-trophy"></i> Ställning <span class="sub">SÄSONGEN 2025</span></div>
+  <div class="card mb-24">
+    <table class="standings-table" id="fullStandings"></table>
+  </div>
+  <div class="section-title"><i class="fas fa-chart-line"></i> Poängutveckling per race</div>
+  <div class="card">
+    <div class="filter-row" id="chartFilterFull"></div>
+    <div class="chart-wrap" style="height:340px"><canvas id="lineChartFull"></canvas></div>
+  </div>
+</section>
+
+<!-- ===================== STATISTICS ===================== -->
+<section id="statistics">
+  <div class="section-title"><i class="fas fa-chart-bar"></i> Statistik</div>
+  <div class="grid-4 mb-24" id="statTiles"></div>
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div style="font-family:var(--font-head);font-size:.85rem;margin-bottom:14px;color:var(--text2)">VINSTER PER FÖRARE</div>
+      <div style="height:240px"><canvas id="barWins"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="font-family:var(--font-head);font-size:.85rem;margin-bottom:14px;color:var(--text2)">POÄNDSFÖRDELNING</div>
+      <div style="height:240px"><canvas id="piePoints"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div style="font-family:var(--font-head);font-size:.85rem;margin-bottom:14px;color:var(--text2)">GENOMSNITT PER RACE</div>
+      <div style="height:220px"><canvas id="barAvg"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="font-family:var(--font-head);font-size:.85rem;margin-bottom:14px;color:var(--text2)">DNF OCH PODIER</div>
+      <div style="height:220px"><canvas id="barDnfPod"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CALENDAR ===================== -->
+<section id="calendar">
+  <div class="section-title"><i class="fas fa-calendar-days"></i> Racekalender <span class="sub">30 RACE</span></div>
+  <div class="search-bar mb-24">
+    <i class="fas fa-search"></i>
+    <input class="form-input" id="calSearch" type="text" placeholder="Sök race..." oninput="renderCalendar()"/>
+  </div>
+  <div id="calendarList"></div>
+</section>
+
+<!-- ===================== PLAYERS ===================== -->
+<section id="players">
+  <div class="section-title"><i class="fas fa-users"></i> Hantera spelare</div>
+  <div class="player-cards" id="playerCards"></div>
+  <div class="card edit-only" style="max-width:400px;display:none">
+    <div style="font-family:var(--font-head);font-size:.9rem;margin-bottom:16px;color:var(--text2)">LÄGG TILL SPELARE</div>
+    <div class="form-group">
+      <label class="form-label">Namn</label>
+      <input class="form-input" id="newPlayerName" type="text" placeholder="Spelarnamn"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Favoritfärg</label>
+      <input class="form-input" type="color" id="newPlayerColor" value="#00d4ff" style="height:42px;padding:4px"/>
+    </div>
+    <button class="btn btn-primary" onclick="addPlayer()"><i class="fas fa-plus"></i> Lägg till spelare</button>
+  </div>
+</section>
+
+<!-- ===================== ADD RESULT ===================== -->
+<section id="addresult">
+  <div class="section-title"><i class="fas fa-flag-checkered"></i> Registrera resultat</div>
+  <div class="grid-2">
+    <div class="card">
+      <div style="font-family:var(--font-head);font-size:.9rem;margin-bottom:16px;color:var(--text2)">VÄLJ RACE</div>
+      <div class="form-group">
+        <label class="form-label">Race</label>
+        <select class="form-select" id="raceSelect" onchange="buildResultForm()"></select>
+      </div>
+      <div id="raceSelectInfo" style="font-size:.82rem;color:var(--text2)"></div>
+    </div>
+    <div class="card" id="resultFormCard">
+      <div style="font-family:var(--font-head);font-size:.9rem;margin-bottom:16px;color:var(--text2)">RESULTAT</div>
+      <div id="resultFormRows"></div>
+      <div class="form-group edit-only" style="margin-top:16px;display:none">
+        <label class="form-label"><i class="fas fa-bolt" style="color:var(--gold)"></i> Driver of the Day</label>
+        <select class="form-select" id="dotdSelect"></select>
+      </div>
+      <div class="edit-only-flex gap-8" style="margin-top:12px;display:none">
+        <button class="btn btn-primary" onclick="saveResult()"><i class="fas fa-save"></i> Spara resultat</button>
+        <button class="btn btn-secondary" onclick="clearResultForm()"><i class="fas fa-times"></i> Rensa</button>
+      </div>
+      <div id="editLockNotice" style="margin-top:16px;padding:12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:.83rem;color:var(--text2);display:flex;align-items:center;gap:10px">
+        <i class="fas fa-lock" style="color:var(--red2)"></i> Klicka på <strong style="color:var(--cyan)">pennikonen</strong> i navigeringen och ange PIN för att kunna spara resultat.
+      </div>
+    </div>
+  </div>
+  <div class="section-title" style="margin-top:32px"><i class="fas fa-history"></i> Racehistorik</div>
+  <div class="search-bar mb-16">
+    <i class="fas fa-search"></i>
+    <input class="form-input" id="histSearch" type="text" placeholder="Sök race..." oninput="renderHistory()"/>
+  </div>
+  <div id="historyList"></div>
+</section>
+</main>
+
+<script>
+/* ============================================================
+   DATA LAYER
+============================================================ */
+const RACE_CALENDAR=[
+  {id:1,name:'Australien',country:'AU'},
+  {id:2,name:'Kina',country:'CN',sprint:true,sprintLabel:'Kina Sprint'},
+  {id:3,name:'Kina',country:'CN'},
+  {id:4,name:'Japan',country:'JP'},
+  {id:5,name:'Bahrain',country:'BH'},
+  {id:6,name:'Saudiarabien',country:'SA'},
+  {id:7,name:'Miami',country:'US',sprint:true,sprintLabel:'Miami Sprint'},
+  {id:8,name:'Miami',country:'US'},
+  {id:9,name:'Imola',country:'IT'},
+  {id:10,name:'Monaco',country:'MC'},
+  {id:11,name:'Spanien',country:'ES'},
+  {id:12,name:'Kanada',country:'CA'},
+  {id:13,name:'Österrike',country:'AT'},
+  {id:14,name:'Storbritannien',country:'GB'},
+  {id:15,name:'Belgien',country:'BE',sprint:true,sprintLabel:'Belgien Sprint'},
+  {id:16,name:'Belgien',country:'BE'},
+  {id:17,name:'Ungern',country:'HU'},
+  {id:18,name:'Nederländerna',country:'NL'},
+  {id:19,name:'Monza',country:'IT'},
+  {id:20,name:'Azerbaijan',country:'AZ'},
+  {id:21,name:'Singapore',country:'SG'},
+  {id:22,name:'Austin',country:'US'},
+  {id:23,name:'Austin',country:'US',sprint:true,sprintLabel:'Austin Sprint'},
+  {id:24,name:'Mexico',country:'MX'},
+  {id:25,name:'Brasilien',country:'BR',sprint:true,sprintLabel:'Brasilien Sprint'},
+  {id:26,name:'Brasilien',country:'BR'},
+  {id:27,name:'Las Vegas',country:'US'},
+  {id:28,name:'Qatar',country:'QA',sprint:true,sprintLabel:'Qatar Sprint'},
+  {id:29,name:'Qatar',country:'QA'},
+  {id:30,name:'Abu Dhabi',country:'AE'},
+];
+
+// Display label per race slot
+const RACE_LABELS=RACE_CALENDAR.map(r=>{
+  if(r.id===2) return 'Kina Sprint';
+  if(r.id===7) return 'Miami Sprint';
+  if(r.id===15) return 'Belgien Sprint';
+  if(r.id===23) return 'Austin Sprint';
+  if(r.id===25) return 'Brasilien Sprint';
+  if(r.id===28) return 'Qatar Sprint';
+  return r.name;
+});
+
+// Sprint IDs (standalone sprint races in order)
+const SPRINT_IDS=[2,7,15,23,25,28];
+
+// Points tables — position → points (DNF/DNS = 0, FL gives NO extra points)
+const RACE_POINTS={1:25,2:18,3:15,4:12,5:10,6:8,7:6,8:4,9:2,10:1};
+const SPRINT_POINTS={1:8,2:7,3:6,4:5,5:4,6:3,7:2,8:1};
+
+function calcPoints(raceId,pos,dnf){
+  if(dnf||!pos||pos<1)return 0;
+  const table=SPRINT_IDS.includes(raceId)?SPRINT_POINTS:RACE_POINTS;
+  return table[pos]||0;
+}
+
+const PLAYER_COLORS=['#e8001d','#00d4ff','#f5c842','#00e676','#ff6d00','#9c27b0','#ff4081','#40c4ff'];
+
+let state={players:[],results:[],theme:'dark',editPin:null};
+
+/* ============================================================
+   EDIT MODE / PIN LOCK
+============================================================ */
+let editModeActive=false;
+
+function isEditMode(){return editModeActive;}
+
+function promptEditMode(callback){
+  if(editModeActive){callback();return;}
+  if(!state.editPin){
+    // No PIN set yet — ask to create one
+    const pin=window.prompt('Ange ett PIN-kod (4 siffror) för att låsa redigering:','');
+    if(!pin)return;
+    if(!/^\d{4}$/.test(pin)){toast('PIN måste vara exakt 4 siffror','error');return;}
+    state.editPin=pin;
+    saveState();
+    editModeActive=true;
+    updateEditBanner();
+    toast('PIN satt – redigeringsläge aktiverat 🔓','success');
+    callback();
+  } else {
+    const entered=window.prompt('Ange PIN för att redigera:','');
+    if(entered===state.editPin){
+      editModeActive=true;
+      updateEditBanner();
+      toast('Redigeringsläge aktiverat 🔓','success');
+      callback();
+    } else if(entered!==null){
+      toast('Fel PIN','error');
+    }
+  }
+}
+
+function lockEditMode(){
+  editModeActive=false;
+  updateEditBanner();
+  toast('Redigeringsläge låst 🔒','success');
+}
+
+function resetPin(){
+  if(!state.editPin){toast('Inget PIN satt','error');return;}
+  const entered=window.prompt('Ange nuvarande PIN:','');
+  if(entered!==state.editPin){toast('Fel PIN','error');return;}
+  state.editPin=null;
+  editModeActive=false;
+  saveState();
+  updateEditBanner();
+  toast('PIN återställt','success');
+}
+
+function updateEditBanner(){
+  const banner=document.getElementById('editBanner');
+  const lockBtn=document.getElementById('lockBtn');
+  if(!banner)return;
+  if(editModeActive){
+    banner.style.display='flex';
+    if(lockBtn)lockBtn.innerHTML='<i class="fas fa-lock"></i> Lås';
+  } else {
+    banner.style.display='none';
+  }
+  // Show/hide edit-only elements
+  document.querySelectorAll('.edit-only').forEach(el=>{
+    el.style.display=editModeActive?'':'none';
+  });
+  document.querySelectorAll('.edit-only-flex').forEach(el=>{
+    el.style.display=editModeActive?'flex':'none';
+  });
+  // Lock notice (inverse of edit-only)
+  const notice=document.getElementById('editLockNotice');
+  if(notice)notice.style.display=editModeActive?'none':'flex';
+  // Nav edit button highlight
+  const navEditBtn=document.getElementById('navEditBtn');
+  if(navEditBtn){
+    navEditBtn.style.borderColor=editModeActive?'var(--red2)':'';
+    navEditBtn.style.color=editModeActive?'var(--red2)':'';
+  }
+}
+
+function loadState(){
+  try{const s=localStorage.getItem('f125liga');if(s)state=JSON.parse(s);}catch(e){}
+  if(!state.players)state.players=[];
+  if(!state.results)state.results=[];
+  if(!('editPin' in state))state.editPin=null;
+}
+function saveState(){localStorage.setItem('f125liga',JSON.stringify(state));}
+
+/* ============================================================
+   DUMMY DATA
+============================================================ */
+function generateDummyData(){
+  state.players=[
+    {id:'p1',name:'Viktor',color:'#e8001d'},
+    {id:'p2',name:'Linus',color:'#00d4ff'},
+    {id:'p3',name:'Emma',color:'#f5c842'},
+    {id:'p4',name:'Marcus',color:'#00e676'},
+    {id:'p5',name:'Sara',color:'#ff6d00'},
+    {id:'p6',name:'Johan',color:'#9c27b0'},
+  ];
+
+  // Results for races 1-9 — points follow official scoring, FL gives no extra points
+  const resultSets=[
+    // Race 1: Australien (regular)
+    [{pid:'p1',pos:1,pts:25,dnf:false,fl:true},{pid:'p2',pos:3,pts:15,dnf:false,fl:false},{pid:'p3',pos:2,pts:18,dnf:false,fl:false},{pid:'p4',pos:5,pts:10,dnf:false,fl:false},{pid:'p5',pos:4,pts:12,dnf:false,fl:false},{pid:'p6',pos:0,pts:0,dnf:true,fl:false}],
+    // Race 2: Kina Sprint
+    [{pid:'p1',pos:2,pts:7,dnf:false,fl:false},{pid:'p2',pos:1,pts:8,dnf:false,fl:true},{pid:'p3',pos:3,pts:6,dnf:false,fl:false},{pid:'p4',pos:4,pts:5,dnf:false,fl:false},{pid:'p5',pos:0,pts:0,dnf:true,fl:false},{pid:'p6',pos:5,pts:4,dnf:false,fl:false}],
+    // Race 3: Kina (regular)
+    [{pid:'p1',pos:3,pts:15,dnf:false,fl:false},{pid:'p2',pos:1,pts:25,dnf:false,fl:true},{pid:'p3',pos:4,pts:12,dnf:false,fl:false},{pid:'p4',pos:2,pts:18,dnf:false,fl:false},{pid:'p5',pos:5,pts:10,dnf:false,fl:false},{pid:'p6',pos:6,pts:8,dnf:false,fl:false}],
+    // Race 4: Japan (regular)
+    [{pid:'p1',pos:2,pts:18,dnf:false,fl:false},{pid:'p2',pos:4,pts:12,dnf:false,fl:false},{pid:'p3',pos:1,pts:25,dnf:false,fl:false},{pid:'p4',pos:0,pts:0,dnf:true,fl:false},{pid:'p5',pos:3,pts:15,dnf:false,fl:true},{pid:'p6',pos:5,pts:10,dnf:false,fl:false}],
+    // Race 5: Bahrain (regular)
+    [{pid:'p1',pos:1,pts:25,dnf:false,fl:true},{pid:'p2',pos:5,pts:10,dnf:false,fl:false},{pid:'p3',pos:3,pts:15,dnf:false,fl:false},{pid:'p4',pos:2,pts:18,dnf:false,fl:false},{pid:'p5',pos:4,pts:12,dnf:false,fl:false},{pid:'p6',pos:0,pts:0,dnf:true,fl:false}],
+    // Race 6: Saudiarabien (regular)
+    [{pid:'p1',pos:4,pts:12,dnf:false,fl:false},{pid:'p2',pos:2,pts:18,dnf:false,fl:false},{pid:'p3',pos:1,pts:25,dnf:false,fl:false},{pid:'p4',pos:3,pts:15,dnf:false,fl:false},{pid:'p5',pos:6,pts:8,dnf:false,fl:false},{pid:'p6',pos:5,pts:10,dnf:false,fl:true}],
+    // Race 7: Miami Sprint
+    [{pid:'p1',pos:3,pts:6,dnf:false,fl:false},{pid:'p2',pos:1,pts:8,dnf:false,fl:false},{pid:'p3',pos:2,pts:7,dnf:false,fl:false},{pid:'p4',pos:4,pts:5,dnf:false,fl:true},{pid:'p5',pos:0,pts:0,dnf:true,fl:false},{pid:'p6',pos:5,pts:4,dnf:false,fl:false}],
+    // Race 8: Miami (regular)
+    [{pid:'p1',pos:2,pts:18,dnf:false,fl:false},{pid:'p2',pos:1,pts:25,dnf:false,fl:false},{pid:'p3',pos:5,pts:10,dnf:false,fl:false},{pid:'p4',pos:3,pts:15,dnf:false,fl:true},{pid:'p5',pos:4,pts:12,dnf:false,fl:false},{pid:'p6',pos:0,pts:0,dnf:true,fl:false}],
+    // Race 9: Imola (regular)
+    [{pid:'p1',pos:1,pts:25,dnf:false,fl:false},{pid:'p2',pos:3,pts:15,dnf:false,fl:false},{pid:'p3',pos:2,pts:18,dnf:false,fl:false},{pid:'p4',pos:4,pts:12,dnf:false,fl:false},{pid:'p5',pos:5,pts:10,dnf:false,fl:false},{pid:'p6',pos:6,pts:8,dnf:false,fl:true}],
+  ];
+
+  const dotdList=['p1','p2','p3','p4','p5','p6','p2','p1','p3'];
+  state.results=resultSets.map((rows,i)=>({raceId:i+1,entries:rows,dotd:dotdList[i]}));
+  saveState();
+}
+
+/* ============================================================
+   COMPUTED STATS
+============================================================ */
+function getPlayerStats(){
+  const stats={};
+  state.players.forEach(p=>{
+    stats[p.id]={id:p.id,name:p.name,color:p.color,races:0,wins:0,podiums:0,dnfs:0,pts:0,ptsArr:[],bestPos:999,flaps:0};
+  });
+  state.results.forEach(r=>{
+    r.entries.forEach(e=>{
+      if(!stats[e.pid])return;
+      const s=stats[e.pid];
+      s.races++;
+      s.pts+=e.pts;
+      s.ptsArr.push({raceId:r.raceId,cumPts:s.pts});
+      if(e.dnf)s.dnfs++;
+      else{
+        if(e.pos===1)s.wins++;
+        if(e.pos<=3)s.podiums++;
+        if(e.pos<s.bestPos)s.bestPos=e.pos;
+      }
+      if(e.fl)s.flaps++;
+    });
+  });
+  return Object.values(stats).sort((a,b)=>b.pts-a.pts);
+}
+
+function getCumulativeData(){
+  const players=state.players;
+  const raceIds=state.results.map(r=>r.raceId);
+  const data={};
+  players.forEach(p=>{
+    let cum=0;
+    data[p.id]=[0,...raceIds.map(rid=>{
+      const r=state.results.find(x=>x.raceId===rid);
+      const e=r?r.entries.find(x=>x.pid===p.id):null;
+      cum+=e?e.pts:0;
+      return cum;
+    })];
+  });
+  return {labels:['Start',...raceIds.map(id=>RACE_LABELS[id-1])],data};
+}
+
+function nextRace(){
+  const doneIds=new Set(state.results.map(r=>r.raceId));
+  return RACE_CALENDAR.find(r=>!doneIds.has(r.id));
+}
+
+/* ============================================================
+   CHARTS
+============================================================ */
+const chartInstances={};
+function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}}
+
+const CHART_DEFAULTS={
+  responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:'#8899bb',font:{family:'Exo 2',size:12}}}},
+  scales:{x:{grid:{color:'rgba(30,45,69,.5)'},ticks:{color:'#8899bb',font:{family:'Exo 2',size:11}}},
+           y:{grid:{color:'rgba(30,45,69,.5)'},ticks:{color:'#8899bb',font:{family:'Exo 2',size:11}}}}
+};
+
+let activeFilters={dash:{},full:{}};
+
+function initFilters(containerId,filterKey,callback){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML='';
+  state.players.forEach(p=>{
+    if(!(p.id in activeFilters[filterKey]))activeFilters[filterKey][p.id]=true;
+    const btn=document.createElement('button');
+    btn.className='filter-chip'+(activeFilters[filterKey][p.id]?' on':'');
+    btn.style.cssText=activeFilters[filterKey][p.id]?`background:${p.color};border-color:${p.color};color:#000`:'';
+    btn.textContent=p.name;
+    btn.onclick=()=>{
+      activeFilters[filterKey][p.id]=!activeFilters[filterKey][p.id];
+      initFilters(containerId,filterKey,callback);
+      callback();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function buildLineChart(canvasId,filterKey){
+  destroyChart(canvasId);
+  const {labels,data}=getCumulativeData();
+  const datasets=state.players
+    .filter(p=>activeFilters[filterKey][p.id]!==false)
+    .map(p=>({
+      label:p.name,data:data[p.id]||[],
+      borderColor:p.color,backgroundColor:p.color+'22',
+      borderWidth:2.5,pointRadius:4,pointHoverRadius:7,tension:.35,fill:false
+    }));
+  const ctx=document.getElementById(canvasId);
+  if(!ctx)return;
+  chartInstances[canvasId]=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets},
+    options:{...CHART_DEFAULTS,plugins:{...CHART_DEFAULTS.plugins,tooltip:{mode:'index',intersect:false}}}
+  });
+}
+
+function buildBarWins(){
+  destroyChart('barWins');
+  const stats=getPlayerStats();
+  const ctx=document.getElementById('barWins');
+  if(!ctx)return;
+  chartInstances['barWins']=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:stats.map(s=>s.name),
+      datasets:[{label:'Vinster',data:stats.map(s=>s.wins),backgroundColor:stats.map(s=>s.color+'cc'),borderRadius:6}]
+    },
+    options:{...CHART_DEFAULTS,plugins:{legend:{display:false}},indexAxis:'y'}
+  });
+}
+
+function buildPiePoints(){
+  destroyChart('piePoints');
+  const stats=getPlayerStats();
+  const ctx=document.getElementById('piePoints');
+  if(!ctx)return;
+  chartInstances['piePoints']=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:stats.map(s=>s.name),datasets:[{data:stats.map(s=>s.pts),backgroundColor:stats.map(s=>s.color+'cc'),borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#8899bb',font:{family:'Exo 2',size:12}}}}}
+  });
+}
+
+function buildBarAvg(){
+  destroyChart('barAvg');
+  const stats=getPlayerStats();
+  const ctx=document.getElementById('barAvg');
+  if(!ctx)return;
+  chartInstances['barAvg']=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:stats.map(s=>s.name),
+      datasets:[{label:'Genomsnitt',data:stats.map(s=>s.races?+(s.pts/s.races).toFixed(1):0),backgroundColor:stats.map(s=>s.color+'99'),borderRadius:6}]
+    },
+    options:{...CHART_DEFAULTS,plugins:{legend:{display:false}}}
+  });
+}
+
+function buildBarDnfPod(){
+  destroyChart('barDnfPod');
+  const stats=getPlayerStats();
+  const ctx=document.getElementById('barDnfPod');
+  if(!ctx)return;
+  chartInstances['barDnfPod']=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:stats.map(s=>s.name),
+      datasets:[
+        {label:'Podier',data:stats.map(s=>s.podiums),backgroundColor:'rgba(0,212,255,.6)',borderRadius:4},
+        {label:'DNF',data:stats.map(s=>s.dnfs),backgroundColor:'rgba(232,0,29,.6)',borderRadius:4}
+      ]
+    },
+    options:{...CHART_DEFAULTS}
+  });
+}
+
+/* ============================================================
+   RENDERS
+============================================================ */
+function renderAll(){
+  renderDashboard();
+  renderStandings();
+  renderStatistics();
+  renderCalendar();
+  renderPlayers();
+  buildResultForm();
+  renderHistory();
+  // Restore edit-mode visibility after DOM rebuild
+  setTimeout(updateEditBanner,0);
+}
+
+function renderDashboard(){
+  // Hero meta
+  const stats=getPlayerStats();
+  const doneRaces=state.results.length;
+  const nr=nextRace();
+  document.getElementById('heroMeta').innerHTML=`
+    <div class="hero-stat"><div class="val">${state.players.length}</div><div class="lbl">Spelare</div></div>
+    <div class="hero-stat"><div class="val">${doneRaces}</div><div class="lbl">Race körda</div></div>
+    <div class="hero-stat"><div class="val">${30-doneRaces}</div><div class="lbl">Kvar</div></div>
+    <div class="hero-stat"><div class="val">${stats[0]?stats[0].name:'–'}</div><div class="lbl">Ledare</div></div>
+    <div class="hero-stat"><div class="val">${stats[0]?stats[0].pts:0}</div><div class="lbl">Poäng</div></div>
+    <div class="hero-stat"><div class="val">${nr?RACE_LABELS[nr.id-1]:'Säsongsslut'}</div><div class="lbl">Nästa race</div></div>
+  `;
+
+  // Latest race highlight
+  const latest=state.results[state.results.length-1];
+  if(latest){
+    const race=RACE_CALENDAR.find(r=>r.id===latest.raceId);
+    const sorted=[...latest.entries].filter(e=>!e.dnf).sort((a,b)=>a.pos-b.pos);
+    const top3=sorted.slice(0,3);
+    const p=e=>state.players.find(x=>x.id===e.pid)||{name:'?',color:'#888'};
+    document.getElementById('latestRaceBlock').innerHTML=`
+      <div class="latest-race">
+        <div class="lr-header">
+          <span class="badge badge-red">Senaste race</span>
+          <span style="font-family:var(--font-head);font-size:.9rem">${RACE_LABELS[race.id-1]}</span>
+          ${SPRINT_IDS.includes(race.id)?'<span class="tag-sprint">SPRINT</span>':''}
+        </div>
+        <div class="podium-row">
+          ${top3.map((e,i)=>{const pl=p(e);const posClass=['p1','p2','p3'][i];return`<div class="podium-card ${posClass}"><div class="podium-pos">${['🥇','🥈','🥉'][i]}</div><div style="width:32px;height:32px;border-radius:50%;background:${pl.color};margin:6px auto;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#000">${pl.name.slice(0,2).toUpperCase()}</div><div class="podium-name">${pl.name}</div><div class="podium-pts">${e.pts} pts</div></div>`;}).join('')}
+          ${top3.length===0?'<div class="empty-state"><i class="fas fa-flag"></i><br>Inga resultat</div>':''}
+        </div>
+        ${latest.dotd?`<div style="margin-top:10px;font-size:.8rem"><span class="badge badge-gold">⭐ Driver of the Day</span> ${(state.players.find(p=>p.id===latest.dotd)||{name:'?'}).name}</div>`:''}
+      </div>`;
+  } else {
+    document.getElementById('latestRaceBlock').innerHTML='<div class="card"><div class="empty-state"><i class="fas fa-flag-checkered"></i><p>Inga race körda ännu</p></div></div>';
+  }
+
+  // Upcoming
+  const next=nextRace();
+  if(next){
+    document.getElementById('upcomingBlock').innerHTML=`
+      <div class="card" style="border-color:var(--cyan);box-shadow:var(--glow-cyan)">
+        <div class="flex items-center gap-8 mb-16">
+          <span class="badge badge-cyan pulse">NÄSTA RACE</span>
+          ${SPRINT_IDS.includes(next.id)?'<span class="tag-sprint">SPRINT</span>':''}
+        </div>
+        <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:700">${RACE_LABELS[next.id-1]}</div>
+        <div style="color:var(--text2);margin-top:8px;font-size:.85rem">Runda ${next.id} av 30</div>
+        <div class="progress-bar" style="margin-top:16px"><div class="progress-fill" style="width:${(state.results.length/30*100).toFixed(0)}%;background:linear-gradient(90deg,var(--cyan),var(--red2))"></div></div>
+        <div style="font-size:.75rem;color:var(--text3);margin-top:6px">${state.results.length}/30 race klara</div>
+      </div>`;
+  } else {
+    document.getElementById('upcomingBlock').innerHTML='<div class="card"><div style="text-align:center;padding:20px"><i class="fas fa-trophy" style="font-size:2rem;color:var(--gold);margin-bottom:10px;display:block"></i><div style="font-family:var(--font-head);font-weight:700">SÄSONGEN KLAR!</div></div></div>';
+  }
+
+  // Standings table
+  renderStandingsTable('dashStandings',true);
+  // Chart
+  initFilters('chartFilterDash','dash',()=>buildLineChart('lineChartDash','dash'));
+  setTimeout(()=>buildLineChart('lineChartDash','dash'),50);
+}
+
+function renderStandings(){
+  renderStandingsTable('fullStandings',false);
+  initFilters('chartFilterFull','full',()=>buildLineChart('lineChartFull','full'));
+  setTimeout(()=>buildLineChart('lineChartFull','full'),50);
+}
+
+function renderStandingsTable(id,mini){
+  const stats=getPlayerStats();
+  const el=document.getElementById(id);
+  if(!el)return;
+  const maxPts=stats[0]?stats[0].pts:1;
+  el.innerHTML=`<thead><tr>
+    <th>#</th><th>Förare</th><th>Race</th><th>Vinster</th><th>Podier</th>
+    ${mini?'':`<th>Snabbaste varv</th><th>DNF</th>`}
+    <th>Poäng</th>
+  </tr></thead><tbody>${stats.map((s,i)=>{
+    const rank=i+1;
+    const rankClass=rank<=3?`rank-${rank}`:'';
+    const posClass=rank===1?'pos-1':rank===2?'pos-2':rank===3?'pos-3':'pos-n';
+    const initials=s.name.slice(0,2).toUpperCase();
+    const delta=i>0?stats[i-1].pts-s.pts:0;
+    return`<tr class="${rankClass}">
+      <td><div class="pos-badge ${posClass}">${rank}</div></td>
+      <td><div class="player-cell"><div class="avatar" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44">${initials}</div>${s.name}${i>0?`<span class="delta same" style="margin-left:4px">-${delta}</span>`:''}</div></td>
+      <td>${s.races}</td><td>${s.wins}</td><td>${s.podiums}</td>
+      ${mini?'':`<td>${s.flaps}</td><td>${s.dnfs}</td>`}
+      <td><span class="pts-total">${s.pts}</span></td>
+    </tr>`;
+  }).join('')}</tbody>`;
+}
+
+function renderStatistics(){
+  const stats=getPlayerStats();
+  if(stats.length===0){document.getElementById('statTiles').innerHTML='';return;}
+  const mostWins=stats.reduce((a,b)=>a.wins>=b.wins?a:b);
+  const mostPodiums=stats.reduce((a,b)=>a.podiums>=b.podiums?a:b);
+  const mostConsistent=stats.filter(s=>s.races>0).reduce((a,b)=>(a.dnfs/a.races<b.dnfs/b.races?a:b));
+  const topAvg=stats.filter(s=>s.races>0).reduce((a,b)=>a.pts/a.races>=b.pts/b.races?a:b);
+
+  document.getElementById('statTiles').innerHTML=`
+    <div class="stat-tile t-red"><i class="fas fa-trophy st-icon"></i><div class="st-lbl">Mest vinster</div><div class="st-val text-gold">${mostWins.wins}</div><div class="st-sub">${mostWins.name}</div></div>
+    <div class="stat-tile t-cyan"><i class="fas fa-chart-line st-icon"></i><div class="st-lbl">Bäst genomsnitt</div><div class="st-val text-cyan">${(topAvg.pts/topAvg.races).toFixed(1)}</div><div class="st-sub">${topAvg.name}</div></div>
+    <div class="stat-tile t-gold"><i class="fas fa-medal st-icon"></i><div class="st-lbl">Flest podier</div><div class="st-val text-gold">${mostPodiums.podiums}</div><div class="st-sub">${mostPodiums.name}</div></div>
+    <div class="stat-tile t-green"><i class="fas fa-shield-halved st-icon"></i><div class="st-lbl">Mest konsekvent</div><div class="st-val" style="color:var(--green)">${mostConsistent.dnfs}</div><div class="st-sub">${mostConsistent.name} (minst DNF)</div></div>
+  `;
+  setTimeout(()=>{buildBarWins();buildPiePoints();buildBarAvg();buildBarDnfPod();},50);
+}
+
+function renderCalendar(){
+  const q=(document.getElementById('calSearch')||{}).value||'';
+  const doneIds=new Set(state.results.map(r=>r.raceId));
+  const next=nextRace();
+  const el=document.getElementById('calendarList');
+  if(!el)return;
+  el.innerHTML=RACE_CALENDAR.filter(r=>{
+    const label=RACE_LABELS[r.id-1];
+    return !q||label.toLowerCase().includes(q.toLowerCase());
+  }).map(r=>{
+    const label=RACE_LABELS[r.id-1];
+    const done=doneIds.has(r.id);
+    const isNext=next&&next.id===r.id;
+    const isSprint=SPRINT_IDS.includes(r.id);
+    const result=state.results.find(x=>x.raceId===r.id);
+    let detailHtml='';
+    if(result){
+      const sorted=[...result.entries].sort((a,b)=>a.dnf-b.dnf||a.pos-b.pos);
+      const dotdPlayer=state.players.find(p=>p.id===result.dotd);
+      detailHtml=`<div class="race-detail">
+        <table class="result-table">
+          <thead><tr><th>Pos</th><th>Förare</th><th>Poäng</th><th></th></tr></thead>
+          <tbody>${sorted.map(e=>{
+            const pl=state.players.find(p=>p.id===e.pid)||{name:'?',color:'#888'};
+            return`<tr>
+              <td>${e.dnf?'DNF':e.pos}</td>
+              <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${pl.color};margin-right:6px"></span>${pl.name}</td>
+              <td>${e.pts}</td>
+              <td>${e.fl?'<span class="badge badge-cyan" style="font-size:.6rem">FL</span>':''}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+        ${dotdPlayer?`<div style="margin-top:10px"><span class="badge badge-gold">⭐ Driver of the Day: ${dotdPlayer.name}</span></div>`:''}
+        <button class="btn btn-secondary btn-sm edit-only" style="margin-top:12px;display:none" onclick="openEditRace(${r.id})"><i class="fas fa-edit"></i> Redigera</button>
+      </div>`;
+    }
+    return`<div class="race-item${done?' done':''}${isNext?' next':''}" id="cal-race-${r.id}">
+      <div class="race-header" onclick="toggleRace(${r.id})">
+        <span class="race-num">${r.id}</span>
+        <span class="race-name">${label}${isSprint?'<span class="tag-sprint" style="margin-left:8px">SPRINT</span>':''}</span>
+        <span class="race-status ${done?'status-done':isNext?'status-next':'status-future'}">${done?'✓ Klar':isNext?'⬡ Nästa':'○ Kommande'}</span>
+        <i class="fas fa-chevron-down race-chevron" style="${done?'':'display:none'}"></i>
+      </div>
+      ${detailHtml}
+    </div>`;
+  }).join('');
+}
+
+function toggleRace(id){
+  const el=document.getElementById(`cal-race-${id}`);
+  if(el)el.classList.toggle('expanded');
+}
+
+function renderPlayers(){
+  const stats={};
+  getPlayerStats().forEach(s=>{stats[s.id]=s;});
+  const el=document.getElementById('playerCards');
+  if(!el)return;
+  el.innerHTML=state.players.length?state.players.map(p=>{
+    const s=stats[p.id]||{pts:0,wins:0,races:0};
+    const initials=p.name.slice(0,2).toUpperCase();
+    return`<div class="player-card">
+      <button class="p-delete edit-only" style="display:none" onclick="removePlayer('${p.id}')"><i class="fas fa-times"></i></button>
+      <div class="avatar-lg" style="background:${p.color}22;color:${p.color};border-color:${p.color}55">${initials}</div>
+      <div class="p-name">${p.name}</div>
+      <div class="p-stats">${s.pts} pts • ${s.wins} vinster • ${s.races} race</div>
+      <div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:${s.races?Math.min(100,s.pts/5):0}%;background:${p.color}"></div></div>
+    </div>`;
+  }).join(''):'<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-user-plus"></i><p>Inga spelare ännu. Lägg till nedan!</p></div>';
+}
+
+function buildResultForm(){
+  const sel=document.getElementById('raceSelect');
+  if(!sel)return;
+  const doneIds=new Set(state.results.map(r=>r.raceId));
+  sel.innerHTML=RACE_CALENDAR.map(r=>{
+    const label=RACE_LABELS[r.id-1];
+    const done=doneIds.has(r.id);
+    return`<option value="${r.id}" ${done?'':''}>${r.id}. ${label}${done?' ✓':''}</option>`;
+  }).join('');
+  const next=nextRace();
+  if(next)sel.value=next.id;
+  updateResultFormRows();
+}
+
+function updateResultFormRows(){
+  const sel=document.getElementById('raceSelect');
+  if(!sel)return;
+  const raceId=parseInt(sel.value);
+  const isSprint=SPRINT_IDS.includes(raceId);
+  const existing=state.results.find(r=>r.raceId===raceId);
+  const infoEl=document.getElementById('raceSelectInfo');
+  const table=isSprint?SPRINT_POINTS:RACE_POINTS;
+  const maxPos=isSprint?8:10;
+  if(existing)infoEl.innerHTML=`<span style="color:var(--gold)"><i class="fas fa-exclamation-triangle"></i> Race har redan resultat. Redigera nedan.</span>`;
+  else infoEl.innerHTML=`<span style="color:var(--green)"><i class="fas fa-check-circle"></i> Race ${raceId}: ${RACE_LABELS[raceId-1]}${isSprint?' <span class="tag-sprint">SPRINT</span>':''}</span>
+    <div style="margin-top:8px;font-size:.78rem;color:var(--text3)">Poäng: ${Object.entries(table).map(([p,v])=>`P${p}→${v}`).join(' | ')}</div>`;
+
+  const dotdSel=document.getElementById('dotdSelect');
+  dotdSel.innerHTML='<option value="">– Ingen –</option>'+state.players.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  if(existing&&existing.dotd)dotdSel.value=existing.dotd;
+
+  const rows=document.getElementById('resultFormRows');
+  if(!state.players.length){rows.innerHTML='<p style="color:var(--text2)">Lägg till spelare först.</p>';return;}
+  rows.innerHTML=state.players.map(p=>{
+    const ex=existing?existing.entries.find(e=>e.pid===p.id):null;
+    const exPos=ex&&!ex.dnf?ex.pos:'';
+    return`<div class="result-inputs-grid" id="row_${p.id}">
+      <div class="player-name" style="color:${p.color}">${p.name}</div>
+      <input class="form-input" type="number" id="pos_${p.id}" placeholder="Pos" min="1" max="20" value="${exPos}" style="width:70px" oninput="refreshPtsPreview('${p.id}',${raceId})"/>
+      <div id="pts_preview_${p.id}" style="font-family:var(--font-head);font-size:.95rem;color:var(--cyan);min-width:40px;text-align:center">${ex?ex.pts:0}</div>
+      <div class="checkbox-wrap"><input type="checkbox" id="dnf_${p.id}" ${ex&&ex.dnf?'checked':''} onchange="refreshPtsPreview('${p.id}',${raceId})"/><label for="dnf_${p.id}">DNF</label></div>
+      <div class="checkbox-wrap"><input type="checkbox" id="fl_${p.id}" ${ex&&ex.fl?'checked':''}/><label for="fl_${p.id}">FL</label></div>
+    </div>`;
+  }).join('');
+}
+
+function refreshPtsPreview(pid,raceId){
+  const pos=parseInt(document.getElementById(`pos_${pid}`).value)||0;
+  const dnf=document.getElementById(`dnf_${pid}`).checked;
+  const pts=calcPoints(raceId,pos,dnf);
+  document.getElementById(`pts_preview_${pid}`).textContent=pts;
+}
+
+function saveResult(){
+  if(!isEditMode()){promptEditMode(saveResult);return;}
+  const sel=document.getElementById('raceSelect');
+  if(!sel)return;
+  const raceId=parseInt(sel.value);
+  const entries=state.players.map(p=>{
+    const pos=parseInt(document.getElementById(`pos_${p.id}`).value)||0;
+    const dnf=document.getElementById(`dnf_${p.id}`).checked;
+    const fl=document.getElementById(`fl_${p.id}`).checked;
+    const pts=calcPoints(raceId,pos,dnf);
+    return{pid:p.id,pos:dnf?0:pos,pts,dnf,fl};
+  });
+  const dotd=document.getElementById('dotdSelect').value||null;
+  const existing=state.results.findIndex(r=>r.raceId===raceId);
+  if(existing>=0)state.results[existing]={raceId,entries,dotd};
+  else state.results.push({raceId,entries,dotd});
+  state.results.sort((a,b)=>a.raceId-b.raceId);
+  saveState();
+  toast('Resultat sparat! ✓','success');
+  renderAll();
+}
+
+function clearResultForm(){buildResultForm();}
+
+function renderHistory(){
+  const q=(document.getElementById('histSearch')||{}).value||'';
+  const el=document.getElementById('historyList');
+  if(!el)return;
+  const filtered=state.results.filter(r=>{
+    const label=RACE_LABELS[r.raceId-1];
+    return !q||label.toLowerCase().includes(q.toLowerCase());
+  }).slice().reverse();
+  el.innerHTML=filtered.length?filtered.map(r=>{
+    const race=RACE_CALENDAR.find(x=>x.id===r.raceId);
+    const label=RACE_LABELS[r.raceId-1];
+    const winner=r.entries.filter(e=>!e.dnf).sort((a,b)=>a.pos-b.pos)[0];
+    const winnerPlayer=winner?state.players.find(p=>p.id===winner.pid):null;
+    return`<div class="race-item">
+      <div class="race-header" onclick="openEditRace(${r.raceId})" style="cursor:pointer">
+        <span class="race-num">${r.raceId}</span>
+        <span class="race-name">${label}${SPRINT_IDS.includes(r.raceId)?'<span class="tag-sprint" style="margin-left:8px">SPRINT</span>':''}</span>
+        ${winnerPlayer?`<span style="font-size:.82rem;color:${winnerPlayer.color}">🏆 ${winnerPlayer.name}</span>`:''}
+        <span class="race-status status-done">✓ Klar</span>
+        <button class="btn btn-danger btn-sm edit-only" style="display:none" onclick="event.stopPropagation();deleteResult(${r.raceId})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><i class="fas fa-history"></i><p>Inga race ännu</p></div>';
+}
+
+/* ============================================================
+   ACTIONS
+============================================================ */
+function addPlayer(){
+  if(!isEditMode()){promptEditMode(addPlayer);return;}
+  const name=(document.getElementById('newPlayerName').value||'').trim();
+  const color=document.getElementById('newPlayerColor').value;
+  if(!name){toast('Ange ett namn','error');return;}
+  if(state.players.find(p=>p.name.toLowerCase()===name.toLowerCase())){toast('Spelare finns redan','error');return;}
+  state.players.push({id:'p'+Date.now(),name,color});
+  document.getElementById('newPlayerName').value='';
+  saveState();
+  toast(`${name} tillagd!`,'success');
+  renderAll();
+}
+
+function removePlayer(id){
+  if(!isEditMode()){promptEditMode(()=>removePlayer(id));return;}
+  if(!confirm('Ta bort spelare?'))return;
+  state.players=state.players.filter(p=>p.id!==id);
+  state.results.forEach(r=>{r.entries=r.entries.filter(e=>e.pid!==id);});
+  saveState();
+  toast('Spelare borttagen','success');
+  renderAll();
+}
+
+function deleteResult(raceId){
+  if(!isEditMode()){promptEditMode(()=>deleteResult(raceId));return;}
+  if(!confirm('Ta bort resultat?'))return;
+  state.results=state.results.filter(r=>r.raceId!==raceId);
+  saveState();
+  toast('Resultat borttaget','success');
+  renderAll();
+}
+
+function openEditRace(raceId){
+  const result=state.results.find(r=>r.raceId===raceId);
+  if(!result){toast('Inga resultat att redigera','error');return;}
+  const label=RACE_LABELS[raceId-1];
+  const sorted=[...result.entries].sort((a,b)=>a.dnf-b.dnf||a.pos-b.pos);
+  const dotdPlayer=state.players.find(p=>p.id===result.dotd);
+  document.getElementById('modalTitle').textContent=`Resultat – ${label}`;
+  document.getElementById('modalBody').innerHTML=`
+    <table class="result-table" style="width:100%;margin-bottom:14px">
+      <thead><tr><th>Pos</th><th>Förare</th><th>Poäng</th><th>FL</th><th>DNF</th></tr></thead>
+      <tbody>${sorted.map(e=>{
+        const pl=state.players.find(p=>p.id===e.pid)||{name:'?',color:'#888'};
+        return`<tr><td>${e.dnf?'DNF':e.pos}</td><td><span style="color:${pl.color}">${pl.name}</span></td><td>${e.pts}</td><td>${e.fl?'✓':''}</td><td>${e.dnf?'✓':''}</td></tr>`;
+      }).join('')}</tbody>
+    </table>
+    ${dotdPlayer?`<div class="mb-16"><span class="badge badge-gold">⭐ Driver of the Day: ${dotdPlayer.name}</span></div>`:''}
+    <div class="flex gap-8">
+      <button class="btn btn-secondary" onclick="promptEditMode(()=>jumpToEdit(${raceId}))"><i class="fas fa-edit"></i> Redigera</button>
+      <button class="btn btn-danger" onclick="promptEditMode(()=>{deleteResult(${raceId});closeModal()})"><i class="fas fa-trash"></i> Radera</button>
+    </div>`;
+  openModal();
+}
+
+function jumpToEdit(raceId){
+  closeModal();
+  showSection('addresult',document.querySelector('.nav-btn:nth-child(7)'));
+  setTimeout(()=>{
+    const sel=document.getElementById('raceSelect');
+    if(sel){sel.value=raceId;updateResultFormRows();}
+  },100);
+}
+
+function openModal(){document.getElementById('modalOverlay').classList.add('open');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+function showSection(id,btn){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  // Rebuild section-specific content
+  if(id==='dashboard')renderDashboard();
+  if(id==='standings')renderStandings();
+  if(id==='statistics')renderStatistics();
+  if(id==='calendar')renderCalendar();
+  if(id==='players')renderPlayers();
+  if(id==='addresult'){buildResultForm();renderHistory();}
+}
+
+/* ============================================================
+   THEME
+============================================================ */
+function toggleTheme(){
+  state.theme=state.theme==='dark'?'light':'dark';
+  document.body.classList.toggle('light-theme',state.theme==='light');
+  saveState();
+  // Rebuild charts
+  Object.keys(chartInstances).forEach(id=>destroyChart(id));
+  renderAll();
+}
+
+/* ============================================================
+   EXPORT / IMPORT
+============================================================ */
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='f125-liga.json';
+  a.click();
+  toast('Data exporterad!','success');
+}
+function triggerImport(){document.getElementById('importFile').click();}
+function importData(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const imported=JSON.parse(ev.target.result);
+      if(imported.players&&imported.results){state=imported;saveState();renderAll();toast('Data importerad!','success');}
+      else toast('Ogiltig fil','error');
+    }catch{toast('Kunde inte läsa fil','error');}
+  };
+  r.readAsText(file);
+  e.target.value='';
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+function toast(msg,type='success'){
+  const el=document.createElement('div');
+  el.className=`toast-msg ${type}`;
+  el.innerHTML=`<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${msg}`;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+loadState();
+if(!state.players||state.players.length===0)generateDummyData();
+if(state.theme==='light')document.body.classList.add('light-theme');
+updateEditBanner();
+renderAll();
+</script>
+</body>
+</html>
